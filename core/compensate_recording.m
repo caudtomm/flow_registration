@@ -1,7 +1,8 @@
 % Author   : Philipp Flotho
 % Copyright 2021 by Philipp Flotho, All rights reserved.
+% 2025 modified by Tommaso Caudullo to output a couple extra variables: useful for integration into TC's calcium_minimal workflow
 
-function reference_frame = compensate_recording(options, ...
+function [reference_frame,W_all,IDXvalid_all] = compensate_recording(options, ...
     reference_frame)
 
     if (~exist(options.output_path, 'dir'))
@@ -62,6 +63,14 @@ function reference_frame = compensate_recording(options, ...
     mean_translation = [];
     mean_disp = [];
     max_disp = [];
+
+
+    % ## --- ADDED BY TC --- ##
+    % compiling w_init's into one warp matrix, to be exported outside
+    % of this loop
+    W_all = [];
+    IDXvalid_all = [];
+    % ## ------------------- ##
     
     % motion compensation:
     i = 0;
@@ -152,6 +161,12 @@ function reference_frame = compensate_recording(options, ...
         [mean_disp_tmp, max_disp_tmp, mean_div_tmp, mean_translation_tmp, ...
             c_reg, c_ref_upd, w_init, w, idx_valid] ...
             = get_eval(options, buffer, c_ref, c_ref_raw, w_init, weight);
+
+        % ## --- ADDED BY TC --- ##
+        % compiling w's into one output warp matrix
+        W_all = cat(4,W_all,w);
+        IDXvalid_all = cat(4,IDXvalid_all,idx_valid);
+        % ## ------------------- ##
 
         if options.update_reference
             c_ref = c_ref_upd;
